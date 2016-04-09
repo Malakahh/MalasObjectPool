@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/SyntaxHighlighter/3.0.83/scripts/shCore.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/SyntaxHighlighter/3.0.83/scripts/shBrushCSharp.min.js"></script>
+
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/SyntaxHighlighter/3.0.83/styles/shCore.min.css" rel="stylesheet">
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/SyntaxHighlighter/3.0.83/styles/shThemeDefault.min.css" rel="stylesheet">
+
+		<style type="text/css">
+			body {
+				background-color: #404040;
+			}
+
+			.panel-body {
+				background-color: #D4D4D4;
+				color: #404040;
+			}
+
+			.panel-default .panel-heading {
+				background-color: #ED7D31;
+				border-color: #D4D4D4;
+				color: #FFFFFF;
+				font-size: 24px;
+			}
+
+			.panel-default {
+				/*  #D4D4D4   */
+				border-color: #404040;
+			}
+
+			.table-bordered {
+				border-color: #ED7D31;
+			}
+
+			.table-bordered thead tr th {
+				border-color: #ED7D31;
+			}
+
+			.table-bordered tbody tr td {
+				border-color: #ED7D31;
+			}
+
+			td div .syntaxhighlighter {
+  				width: 500px !important;
+  			}
+
+  			h1 {
+  				color: #ED7D31;
+  				text-align: center;
+  			}
+
+  			h3 {
+  				color: #404040;
+  				font-weight: bold;
+  			}
+
+  			.figure {
+  				width: 50%;
+  				margin: 0 auto;
+  				padding-bottom: 25px;
+  			}
+
+  			.footer {
+  				text-align: center;
+  				color: #ED7D31;
+  			}
+
+  			ol {
+
+  			}
+		</style>
+	</head>
+	<body>
+		<div class="container-fluid content">
+			<div class="row">
+				<div class="col-md-8 col-md-offset-2">
+					<h1>
+						Mala's Object Pool - README
+					</h1>
+					<div class="panel panel-default">
+		    			<div class="panel-heading">
+		    				Introduction
+						</div>
+		                <div class="panel-body">
+		                	<p>
+		                		The purpose of an object pool is essentially enabling recycling of objects, and it is done for performance reasons, see <a href="https://en.wikipedia.org/wiki/Object_pool_pattern">Wikipedia</a>.
+		                	</p>
+		                	<p>
+								This object pool features async instantiation of objects given a threshold, and will grow by N*2, ensuring a readily available supply of objects. Furthermore, it follows the Singleton pattern.
+		                	</p>
+		                </div>
+	                </div>
+					<div class="panel panel-default">
+		    			<div class="panel-heading">
+		    				Methods
+						</div>
+		                <div class="panel-body">
+		                	<table class="table table-bordered">
+		                		<thead>
+		                			<tr>
+			                			<th>Name</th>
+			                			<th>Parameters</th>
+			                			<th>Description</th>
+		                			</tr>
+		                		</thead>
+		                		<tbody>
+		                			<tr>
+		                				<td><pre class="brush: c#">T Acquire&lt;T&gt;() where T : new()</pre></td>
+		                				<td><b>T</b>: Type of object to acquire.</td>
+		                				<td>Acquires an object from the object pool.</td>
+		                			</tr>
+		                			<tr>
+		                				<td><pre class="brush: c#">void Release&lt;T&gt;(T obj)</pre></td>
+		                				<td><b>T</b>: Object type to release. <b>obj</b>: Object to release.</td>
+		                				<td>Releases an object back into the pool.</td>
+		                			</tr>
+		                			<tr>
+		                				<td><pre class="brush: c#">void SetLowerInstantiationThreshold&lt;T&gt;(int threshold)</pre></td>
+		                				<td><b>T</b>: Object type to set threshold for. <b>threshold</b>: The new lower threshold.</td>
+		                				<td>Sets the lower threshold for when instantiation of new objects should begin. Defaults to 1. If things are spawned often, i.e. bullets, you want to set this higher.</td>
+		                			</tr>
+		                			<tr>	
+	            						<td><pre class="brush: c#">int GetLowerInstatiationThreshold&lt;T&gt;()</pre></td>
+	            						<td><b>T</b>: Object type to get threshold for.</td>
+	            						<td>Gets the lower threshold for when instatiation of new objects should begin. Defaults to 1. Returns -1 on fail.</td>
+		                			</tr>
+		                			<tr>
+		                				<td><pre class="brush: c#">int GetInstanceCountTotal&lt;T&gt;()</pre></td>
+		                				<td><b>T</b>: Object type.</td>
+		                				<td>Gets the total instance count of objects of a given type that exists, both in and out of the pool.</td>
+		                			</tr>
+		                		</tbody>
+							</table>
+		                </div>
+	                </div>
+	                <div class="panel panel-default">
+	                	<div class="panel-heading">
+	                		Quick Start
+	                	</div>
+	                	<div class="panel-body">
+	                		<ol>
+	                			<li>
+	                				Attach a script to a prefab
+	                			</li>
+	                			<li>
+	                				Place prefab in Resources folder
+	                			</li>
+	                			<li>
+	                				Use <i>T Acquire&lt;T&gt;()</i> and <i>void Release&lt;T&gt;(T obj)</i> with T being the class in the attached script.
+	                			</li>
+	                		</ol>
+	                	</div>
+	                </div>
+	                <div class="panel panel-default">
+	                	<div class="panel-heading">
+	                		Detailed Example
+	                	</div>
+	                	<div class="panel-body">
+	                		<div class="row">
+		                		<div class="col-md-6">
+			                		<figure class="figure">
+										<img src="html/FigureA.PNG" class="figure-img img-fluid img-rounded">
+										<figcaption class="figure-caption">Figure A.</figcaption>
+									</figure>
+		                		</div>
+		                		<div class="col-md-6">
+			                		<figure class="figure">
+										<img src="html/FigureB.PNG" class="figure-img img-fluid img-rounded">
+										<figcaption class="figure-caption">Figure B.</figcaption>
+									</figure>
+		                		</div>
+	                		</div>
+	                		<p>
+	                			The initial setup is simple. Once imported into Unity, you should have a file tree similar to what can be seen in Figure A. To use the object pool, simply use the <i>ObjectPool</i> prefab in the scene, it will persist cross-scene, and reset itself accordingly, so it is only necessary to put it in the first scene.
+	                		</p>
+	                		<p>
+	                			Figure B shows the inspector view of <i>ObjectPool</i>. Error Level determines whether eventual exceptions should appear as regular exceptions, or show them in the console of Unity. Display warnings enables whether any warnings should be displayed in the console.
+	                		</p>
+	                		<p>
+	                			The object pool comes with some unit tests, if you wish to run these, make sure that Run Tests is enabled, otherwise turn it off in the inspector, or simply delete the Tests folder.
+	                		</p>
+	                		<pre class="brush: c#">
+	            			    class Character : MonoBehaviour
+							    {
+							        void Awake()
+							        {
+							            //We need a lot of Bullets, so we need to make sure we have plenty available at all times.
+							            //Once the object pool contains less than 10 bullets, we should start async instatiation of more,
+							            //such as to keep up with demand.
+							            ObjectPool.Instance.SetLowerInstantiationThreshold&lt;Bullet&gt;(10);
+							        }
+
+							        void Update()
+							        {
+							            //SHOOOT
+							            Shoot();
+							        }
+
+							        void Shoot()
+							        {
+							            //Gets a bullet from the objectpool.
+							            //If you want to use the object pool for something that inherits from UnityEngine.Object, 
+							            //these needs to be available in the Resources folder, and must be unique. In this case, 
+							            //there must only be one prefab in Resources with the script Bullet attached to it.
+							            //Having multiple prefabs with the same scripts is undefined behavior.
+							            //To avoid this, you can use inheritance, and specify, for instance, different kinds of ammunition.
+							            Bullet b = ObjectPool.Instance.Acquire&lt;Bullet&gt;();
+
+							            //Set Bullet position and trajectory
+							            b.pos = transform.position;
+							            b.dir = Vector2.up;
+
+							            //Make sure that we show the Bullet. Any objects spawned from the objectpool will initially be inactive
+							            b.gameObject.SetActive(true);
+							        }
+							    }
+
+							    class Bullet : MonoBehaviour
+							    {
+							        public Vector2 pos;
+							        public Vector2 dir;
+
+							        void Update()
+							        {
+							            this.pos += dir;
+							        }
+
+							        void OnCollisionEnter(Collision collision)
+							        {
+							            //Do something to the target
+
+							            ResetAndReturn();
+							        }
+
+							        void ResetAndReturn()
+							        {
+							            //Reset the bullet here, though no need to set active to false
+
+							            //Return it to the object pool so that it may be recycled.
+							            ObjectPool.Instance.Release&lt;Bullet&gt;(this);
+							        }
+							    }
+	                		</pre>
+	                	</div>                	
+	                </div>
+	                <div class="panel panel-default">
+	                	<div class="panel-heading">
+	                		Performance
+	                	</div>
+	                	<div class="panel-body">
+	                		<h3>
+	                			Procedure
+	                		</h3>
+	                		Instantiate/acquire a number of objects, and destroy/return every second one. Run 10 tests, and average results.
+	                		<h3>
+	                			Results
+	                		</h3>
+	                		<p>
+	                			Average time spent for 10,000 identical, simple GameObjects
+	                		</p>
+	                		<div class="row">
+	                			<div class="col-md-2">
+			                		<table class="table table-bordered">
+				                		<thead>
+				                			<tr>
+					                			<th>Classic</th>
+					                			<th>Object Pooled</th>
+				                			</tr>
+				                		</thead>
+				                		<tbody>
+				                			<tr>
+				                				<td>0.234788</td>
+				                				<td>0.135989</td>
+				                			</tr>
+			                			</tbody>
+			            			</table>
+	                			</div>
+	                		</div>
+	            			Here, the Object Pool completed the procedure 42.08% faster.
+	                	</div>
+	                </div>
+	                <p class="footer">
+	                	Copyright &copy; 2015-2016 Malakahh.
+	                </p>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+		     SyntaxHighlighter.all()
+		</script>
+	</body>
+</html>
