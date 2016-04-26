@@ -1,15 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Debug = UnityEngine.Debug;
+using UnityEditor;
 
 public partial class ObjectPool : UnityEngine.MonoBehaviour
 {
-    public enum ObjectPoolErrorLevel {LogError, Exceptions}
-
     public static ObjectPool Instance;
-
-    public ObjectPoolErrorLevel ErrorLevel = ObjectPoolErrorLevel.LogError;
-    public bool DisplayWarnings = true;
     
     Dictionary<System.Type, BaseMetaEntry> genericBasedPools = new Dictionary<System.Type, BaseMetaEntry>();
 
@@ -137,31 +133,16 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
             //Error if we didn't find anything
             if (arr == null || arr.Length == 0)
             {
-                if (ErrorLevel == ObjectPoolErrorLevel.LogError)
-                {
-                    Debug.LogError(ErrorStrings.RESOURCE_NOT_FOUND);
-                    return default(T);
-                }
-                else
-                {
-                    throw new ObjectPoolException(ErrorStrings.RESOURCE_NOT_FOUND, t);
-                }
+                Debug.LogError(ErrorStrings.RESOURCE_NOT_FOUND);
+                return default(T);
             }
 
             //Error if we found too much
             if (arr.Length > 1)
             {
-                if (ErrorLevel == ObjectPoolErrorLevel.LogError)
-                {
-                    Debug.LogError(ErrorStrings.OBJECT_TYPE_MUST_BE_UNIQUE);
-                    return default(T);
-                }
-                else
-                {
-                    throw new ObjectPoolException(ErrorStrings.OBJECT_TYPE_MUST_BE_UNIQUE, t);
-                }
+                Debug.LogError(ErrorStrings.OBJECT_TYPE_MUST_BE_UNIQUE);
+                return default(T);
             }
-
 
             toCast = arr[0];
         }
@@ -204,15 +185,8 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
         if (threshold < 1)
         {
-            if (ErrorLevel == ObjectPoolErrorLevel.LogError)
-            {
-                Debug.LogError(ErrorStrings.THRESHOLD_TOO_LOW);
-                return;
-            }
-            else
-            {
-                throw new ObjectPoolException(ErrorStrings.THRESHOLD_TOO_LOW, t);
-            }
+            Debug.LogError(ErrorStrings.THRESHOLD_TOO_LOW);
+            return;
         }
 
         if (PoolContainsKey(t))
@@ -264,14 +238,7 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
         if (!ret)
         {
-            if (ErrorLevel == ObjectPoolErrorLevel.LogError)
-            {
-                Debug.LogError(ErrorStrings.OBJECT_TYPE_NOT_FOUND);
-            }
-            else
-            {
-                throw new ObjectPoolException(ErrorStrings.OBJECT_TYPE_NOT_FOUND, t);
-            }
+            Debug.LogError(ErrorStrings.OBJECT_TYPE_NOT_FOUND);
         }
 
         return ret;
@@ -307,22 +274,6 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
                     }
                 }
             }
-        }
-    }
-
-    public class ObjectPoolException : System.Exception
-    {
-        public System.Type TypeUsed;
-        public string KeyUsed;
-
-        public ObjectPoolException(string msg, System.Type t) : base(msg)
-        {
-            TypeUsed = t;
-        }
-
-        public ObjectPoolException(string msg, string key) : base(msg)
-        {
-            KeyUsed = key;
         }
     }
 

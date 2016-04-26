@@ -38,7 +38,6 @@ public partial class ObjectPool : MonoBehaviour
     {
         if (RunTests)
         {
-            ObjectPool.Instance.ErrorLevel = ObjectPool.ObjectPoolErrorLevel.Exceptions;
             Debug.Log("*** Running Object Pool Unit Tests...");
 
             rotDefaultConstructorObject = StartCoroutine(DefaultConstructorObject());
