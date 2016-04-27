@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,17 +11,6 @@ public partial class ObjectPool : MonoBehaviour
     public bool RunTests = true;
 
     bool done = false;
-    bool defaultConstructorObject = true,
-        defaultConstructorObjectMany = true,
-        thresholdDefaultSuccess1 = true,
-        thresholdDefaultSuccess2 = true,
-        thresholdIncreased1 = true,
-        thresholdIncreased2 = true,
-        release1 = true,
-        release2 = true,
-        gameObjectTest1 = true,
-        gameObjectTest2 = true,
-        asyncImmediateInstantiation = true;
 
     Coroutine rotDefaultConstructorObject,
         rotDefaultConstructorObjectMany,
@@ -32,7 +22,8 @@ public partial class ObjectPool : MonoBehaviour
         rotRelease2,
         rotGameObjectTest1,
         rotGameObjectTest2,
-        rotAsyncImmediateInstantiation;
+        rotAsyncImmediateInstantiation,
+        rotAddTypeToPool;
 
     void Start()
     {
@@ -51,6 +42,7 @@ public partial class ObjectPool : MonoBehaviour
             rotGameObjectTest1 = StartCoroutine(GameObjectTest1());
             rotGameObjectTest2 = StartCoroutine(GameObjectTest2());
             rotAsyncImmediateInstantiation = StartCoroutine(AsyncImmediateInstantiation());
+            rotAddTypeToPool = StartCoroutine(AddTypeToPoolTest());
 
             PerformanceTest();
         }
@@ -70,29 +62,9 @@ public partial class ObjectPool : MonoBehaviour
                 rotRelease2 == null &&
                 rotGameObjectTest1 == null &&
                 rotGameObjectTest2 == null &&
-                rotAsyncImmediateInstantiation == null)
+                rotAsyncImmediateInstantiation == null &&
+                rotAddTypeToPool == null)
                 {
-                    bool res = defaultConstructorObject &&
-                    defaultConstructorObjectMany &&
-                    thresholdDefaultSuccess1 &&
-                    thresholdDefaultSuccess2 &&
-                    thresholdIncreased1 &&
-                    thresholdIncreased2 &&
-                    release1 &&
-                    release2 &&
-                    gameObjectTest1 &&
-                    gameObjectTest2 &&
-                    asyncImmediateInstantiation;
-
-                    if (res)
-                    {
-                        Debug.Log("*** Test completed with result: " + res);
-                    }
-                    else
-                    {
-                        Debug.LogError("*** Test completed with result: " + res);
-                    }
-
                     done = true;
                 }
         }
@@ -104,9 +76,7 @@ public partial class ObjectPool : MonoBehaviour
         yield return new WaitForEndOfFrame();
         TestDataClass expected = new TestDataClass(1);
 
-        defaultConstructorObject = expected.CheckEqual(data);
-
-        Debug.Log("DefaultConstructorObject: " + defaultConstructorObject);
+        Assert.IsTrue(expected.CheckEqual(data));
 
         rotDefaultConstructorObject = null;
     }
@@ -122,7 +92,7 @@ public partial class ObjectPool : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        defaultConstructorObjectMany = true;
+        bool defaultConstructorObjectMany = true;
 
         foreach (TestDataClass d in list)
         {
@@ -130,7 +100,7 @@ public partial class ObjectPool : MonoBehaviour
                 defaultConstructorObjectMany = false;
         }
 
-        Debug.Log("DefaultConstructorObjectMany: " + defaultConstructorObjectMany);
+        Assert.IsTrue(defaultConstructorObjectMany);
 
         rotDefaultConstructorObjectMany = null;
     }
@@ -143,8 +113,8 @@ public partial class ObjectPool : MonoBehaviour
             ObjectPool.Instance.Acquire<ThresholdDerivativeDefaultSuccess1>();
             yield return new WaitForEndOfFrame();
         }
-        thresholdDefaultSuccess1 = ObjectPool.Instance.GetInstanceCountTotal<ThresholdDerivativeDefaultSuccess1>() == expected;
-        Debug.Log("ThresholdDefaultSuccess1: " + thresholdDefaultSuccess1);
+
+        Assert.AreEqual(ObjectPool.Instance.GetInstanceCountTotal<ThresholdDerivativeDefaultSuccess1>(), expected);
 
         rotThresholdDefaultSuccess1 = null;
     }
@@ -158,8 +128,7 @@ public partial class ObjectPool : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        thresholdDefaultSuccess2 = ObjectPool.Instance.GetInstanceCountTotal<ThresholdDerivativeDefaultSuccess2>() == expected;
-        Debug.Log("ThresholdDefaultSuccess2: " + thresholdDefaultSuccess2);
+        Assert.AreEqual(ObjectPool.Instance.GetInstanceCountTotal<ThresholdDerivativeDefaultSuccess2>(), expected);
 
         rotThresholdDefaultSuccess2 = null;
     }
@@ -177,8 +146,7 @@ public partial class ObjectPool : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        thresholdIncreased1 = ObjectPool.Instance.GetInstanceCountTotal<ThresholdDerivativeIncreased1>() == expected;
-        Debug.Log("ThresholdIncreased1: " + thresholdIncreased1);
+        Assert.AreEqual(ObjectPool.Instance.GetInstanceCountTotal<ThresholdDerivativeIncreased1>(), expected);
 
         rotThresholdIncreased1 = null;
     }
@@ -196,8 +164,7 @@ public partial class ObjectPool : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        thresholdIncreased2 = ObjectPool.Instance.GetInstanceCountTotal<ThresholdDerivativeIncreased2>() == expected;
-        Debug.Log("ThresholdIncreased2: " + thresholdIncreased2);
+        Assert.AreEqual(ObjectPool.Instance.GetInstanceCountTotal<ThresholdDerivativeIncreased2>(), expected);
 
         rotThresholdIncreased2 = null;
     }
@@ -218,8 +185,7 @@ public partial class ObjectPool : MonoBehaviour
         ObjectPool.Instance.Acquire<ReleaseDerivative1>();
         yield return new WaitForEndOfFrame();
 
-        release1 = ObjectPool.Instance.GetInstanceCountTotal<ReleaseDerivative1>() == expected;
-        Debug.Log("Release1: " + release1);
+        Assert.AreEqual(ObjectPool.Instance.GetInstanceCountTotal<ReleaseDerivative1>(), expected);
 
         rotRelease1 = null;
     }
@@ -241,8 +207,7 @@ public partial class ObjectPool : MonoBehaviour
         ObjectPool.Instance.Acquire<ReleaseDerivative2>();
         yield return new WaitForEndOfFrame();
 
-        release2 = ObjectPool.Instance.GetInstanceCountTotal<ReleaseDerivative2>() != expected;
-        Debug.Log("Release2: " + release2);
+        Assert.AreNotEqual(ObjectPool.Instance.GetInstanceCountTotal<ReleaseDerivative2>(), expected);
 
         rotRelease2 = null;
     }
@@ -252,25 +217,22 @@ public partial class ObjectPool : MonoBehaviour
         ObjectPoolGameObjectTestScript obj = ObjectPool.Instance.Acquire<ObjectPoolGameObjectTestScript>();
         yield return new WaitForEndOfFrame();
 
-        gameObjectTest1 = obj != null && obj.gameObject != null;
-        Debug.Log("GameObjectTest1: " + gameObjectTest1);
+        Assert.IsNotNull(obj);
+        Assert.IsNotNull(obj.gameObject);
 
         rotGameObjectTest1 = null;
     }
 
     IEnumerator GameObjectTest2()
     {
-        gameObjectTest2 = true;
         for (int i = 0; i < 20; i++)
         {
             ObjectPoolGameObjectTestScript obj = ObjectPool.Instance.Acquire<ObjectPoolGameObjectTestScript>();
             yield return new WaitForEndOfFrame();
-            if (obj == null || obj.gameObject == null)
-            {
-                gameObjectTest2 = false;
-            }
+
+            Assert.IsNotNull(obj);
+            Assert.IsNotNull(obj.gameObject);
         }
-        Debug.Log("GameObjectTest2: " + gameObjectTest2);
 
         rotGameObjectTest2 = null;
     }
@@ -281,18 +243,28 @@ public partial class ObjectPool : MonoBehaviour
 
         TestDataClass expected = new TestDataClass(1);
 
-        asyncImmediateInstantiation = true;
         for (int i = 0; i < 20; i++)
         {
             AsyncImmediateDerivative obj = ObjectPool.Instance.Acquire<AsyncImmediateDerivative>();
-            if (!obj.CheckEqual(expected))
-            {
-                asyncImmediateInstantiation = false;
-            }
+
+            Assert.IsTrue(obj.CheckEqual(expected));
         }
 
-        Debug.Log("AsyncImmediateInstantiation: " + asyncImmediateInstantiation);
         rotAsyncImmediateInstantiation = null;
+    }
+
+    IEnumerator AddTypeToPoolTest()
+    {
+        yield return new WaitForEndOfFrame();
+
+        AddTypeToPoolDerivative d = new AddTypeToPoolDerivative();
+        ObjectPool.Instance.AddTypeToPool(d);
+
+        AddTypeToPoolDerivative d2 = ObjectPool.Instance.Acquire<AddTypeToPoolDerivative>();
+
+        Assert.AreEqual(ObjectPool.Instance.GetInstanceCountTotal<AddTypeToPoolDerivative>(), 2);
+        
+        rotAddTypeToPool = null;
     }
 
     void PerformanceTest()
@@ -306,7 +278,7 @@ public partial class ObjectPool : MonoBehaviour
 
         //Without the use of an object pool
         without.Start();
-        for (int i = 0; i < num; i++)
+        for (int i = 0; i < num; ++i)
         {
             GameObject go = GameObject.Instantiate<GameObject>(reference.gameObject);
 
@@ -319,7 +291,7 @@ public partial class ObjectPool : MonoBehaviour
 
         //Generic object pool
         generic.Start();
-        for (int i = 0; i < num; i++)
+        for (int i = 0; i < num; ++i)
         {
             ObjectPoolGameObjectTestScript t = ObjectPool.Instance.Acquire<ObjectPoolGameObjectTestScript>();
 
@@ -378,6 +350,7 @@ public partial class ObjectPool : MonoBehaviour
     class PerformanceDerivative1 : TestDataClass { }
     class PerformanceDerivative2 : TestDataClass { }
     class PerformanceDerivative3 : TestDataClass { }
+    class AddTypeToPoolDerivative : TestDataClass { }
 }
 
 #endif

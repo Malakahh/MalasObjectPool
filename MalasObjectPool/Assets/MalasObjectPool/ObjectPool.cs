@@ -81,6 +81,28 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
         return entry.Pool.Dequeue();
     }
 
+    public void AddTypeToPool<T>(T template) where T : new ()
+    {
+        System.Type t = typeof(T);
+
+        if (genericBasedPools.ContainsKey(t)) //Not using PoolContainsKey, as this is first instantiation
+        {
+            return;
+        }
+
+        MetaEntry<T> entry = new MetaEntry<T>();
+
+        if (t.IsSubclassOf(typeof(UnityEngine.Object)))
+        {
+            entry.Original = template as UnityEngine.Object;
+            entry.Pool.Enqueue(InstantiateUnityObject<T>(entry.Original));
+        }
+        else
+        {
+            entry.Pool.Enqueue(new T());
+        }
+    }
+
     private void InstantiateObject<T>(MetaEntry<T> entry) where T : new()
     {
         if (typeof(T).IsSubclassOf(typeof(UnityEngine.Object)))
