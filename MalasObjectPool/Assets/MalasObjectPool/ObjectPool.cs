@@ -7,7 +7,7 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 {
     public static ObjectPool Instance;
     
-    Dictionary<System.Type, BaseMetaEntry> genericBasedPools = new Dictionary<System.Type, BaseMetaEntry>();
+    Dictionary<System.Type, BaseMetaEntry> pools = new Dictionary<System.Type, BaseMetaEntry>();
 
     void Awake()
     {
@@ -17,7 +17,7 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
     void OnLevelWasLoaded(int level)
     {
-        genericBasedPools.Clear();
+        pools.Clear();
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
         if (PoolContainsKey(t))
         {
-            ((MetaEntry<T>)genericBasedPools[t]).Pool.Enqueue(obj);
+            ((MetaEntry<T>)pools[t]).Pool.Enqueue(obj);
         }
     }
 
@@ -46,15 +46,15 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
         MetaEntry<T> entry;
 
-        if (!genericBasedPools.ContainsKey(t)) //Not using PoolContainsKey, as this is first instantiation
+        if (!pools.ContainsKey(t)) //Not using PoolContainsKey, as this is first instantiation
         {
             entry = new MetaEntry<T>();
             InstantiateObject<T>(entry);
-            genericBasedPools.Add(t, entry);
+            pools.Add(t, entry);
         }
         else
         {
-            entry = (MetaEntry<T>)genericBasedPools[t];
+            entry = (MetaEntry<T>)pools[t];
         }
         
         //Below threshold, make more instances
@@ -81,11 +81,16 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
         return entry.Pool.Dequeue();
     }
 
+    /// <summary>
+    /// Dynamically adds a type to the pool
+    /// </summary>
+    /// <typeparam name="T">Type of the object to add</typeparam>
+    /// <param name="template">Copy of the object to add. All future objects are clones of this object.</param>
     public void AddTypeToPool<T>(T template) where T : new ()
     {
         System.Type t = typeof(T);
 
-        if (genericBasedPools.ContainsKey(t)) //Not using PoolContainsKey, as this is first instantiation
+        if (pools.ContainsKey(t)) //Not using PoolContainsKey, as this is first instantiation
         {
             return;
         }
@@ -213,7 +218,7 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
         if (PoolContainsKey(t))
         {
-            MetaEntry<T> entry = (MetaEntry<T>)genericBasedPools[t];
+            MetaEntry<T> entry = (MetaEntry<T>)pools[t];
             entry.LowerThreshold = threshold;
         }
     }
@@ -229,7 +234,7 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
         if (PoolContainsKey(t))
         {
-            MetaEntry<T> entry = (MetaEntry<T>)genericBasedPools[t];
+            MetaEntry<T> entry = (MetaEntry<T>)pools[t];
             return entry.LowerThreshold;
         }
 
@@ -247,7 +252,7 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
         if (PoolContainsKey(t))
         {
-            MetaEntry<T> entry = (MetaEntry<T>)genericBasedPools[t];
+            MetaEntry<T> entry = (MetaEntry<T>)pools[t];
             return entry.InstanceCountTotal;
         }
 
@@ -256,7 +261,7 @@ public partial class ObjectPool : UnityEngine.MonoBehaviour
 
     private bool PoolContainsKey(System.Type t)
     {
-        bool ret = genericBasedPools.ContainsKey(t);
+        bool ret = pools.ContainsKey(t);
 
         if (!ret)
         {

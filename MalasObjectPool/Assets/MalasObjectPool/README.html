@@ -132,6 +132,11 @@
 		                				<td><b>T</b>: Object type.</td>
 		                				<td>Gets the total instance count of objects of a given type that exists, both in and out of the pool.</td>
 		                			</tr>
+		                			<tr>
+		                				<td><pre class="brush: c#">void AddTypeToPool&lt;T&gt;(T template)</pre></td>
+		                				<td><b>T</b>: Object type. <b>template</b>: Copy of the object to add. All future objects are clones of this object.</td>
+		                				<td>Dynamically adds a type to the pool.</td>
+		                			</tr>
 		                		</tbody>
 							</table>
 		                </div>
