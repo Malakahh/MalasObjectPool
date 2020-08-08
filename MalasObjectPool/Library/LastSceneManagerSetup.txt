@@ -1,0 +1,4 @@
+sceneSetups:
+- path: D:/GitRepos/Unity-Tools/Unity-Tools/Assets/Scenes/main.unity
+  isLoaded: 1
+  isActive: 1
